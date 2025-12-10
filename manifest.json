@@ -1,0 +1,34 @@
+{
+  "Actions": [
+    {
+      "UUID": "com.ramwich.smartthings.control",
+      "Name": "SmartThings Control",
+      "Icon": "images/actionIcon",
+      "States": [
+        {
+          "Image": "images/actionDefault",
+          "TitleAlignment": "bottom",
+          "FontSize": "12"
+        }
+      ],
+      "PropertyInspectorPath": "propertyinspector.html",
+      "Tooltip": "Control SmartThings device, scene, or group"
+    }
+  ],
+  "Author": "ramwich",
+  "Category": "Smart Home",
+  "Name": "SmartThings Controller (group-enabled)",
+  "URL": "https://github.com/ramwich/streamdeck-plugin-smartthings-group",
+  "SDKVersion": 2,
+  "Version": "0.2",
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.13"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ]
+}

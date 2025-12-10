@@ -1,0 +1,11 @@
+{
+  "name": "streamdeck-smartthings-group",
+  "version": "0.2.0",
+  "description": "Stream Deck plugin controlling SmartThings devices, scenes, and groups",
+  "main": "src/plugin.js",
+  "scripts": {
+    "lint": "echo no-op",
+    "start": "echo Build .sdPlugin bundle and load in Stream Deck"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>SmartThings — Property Inspector</title>
+    <style>
+      body { font-family: system-ui, Arial; padding: 12px; max-width:420px; }
+      label { display:block; margin-top:10px; font-weight:600; }
+      input, select, textarea { width:100%; padding:8px; margin-top:6px; box-sizing:border-box; }
+      button { padding:8px 10px; margin-top:8px; }
+      .small { font-size:0.9em; color:#666; margin-top:4px; }
+    </style>
+  </head>
+  <body>
+    <h3>SmartThings</h3>
+
+    <label>Personal Access Token (PAT)</label>
+    <input id="pat" placeholder="Paste your SmartThings PAT here" />
+    <div>
+      <button id="savePat">Save PAT (global)</button>
+      <button id="loadDevices">Load devices</button>
+      <button id="loadScenes">Load scenes</button>
+    </div>
+    <div class="small">PAT is saved globally for the plugin.</div>
+
+    <label>Target type</label>
+    <select id="targetType">
+      <option value="device">Device</option>
+      <option value="scene">Scene</option>
+      <option value="group">Group (multi-device)</option>
+    </select>
+
+    <div id="deviceSection">
+      <label>Device</label>
+      <select id="deviceSelect"><option value="">(no device)</option></select>
+
+      <label>Command</label>
+      <select id="deviceCommand">
+        <option value="toggle">Toggle</option>
+        <option value="on">On</option>
+        <option value="off">Off</option>
+        <option value="setLevel">Set Level</option>
+      </select>
+
+      <label id="deviceLevelLabel" style="display:none">Level (0-100)</label>
+      <input id="deviceLevel" type="number" min="0" max="100" style="display:none" />
+    </div>
+
+    <div id="sceneSection" style="display:none">
+      <label>Scene</label>
+      <select id="sceneSelect"><option value="">(no scene)</option></select>
+    </div>
+
+    <div id="groupSection" style="display:none">
+      <label>Devices (hold Ctrl/Cmd to multi-select)</label>
+      <select id="groupDevices" multiple size="6" style="height:150px"></select>
+
+      <label>Group Command</label>
+      <select id="groupCommand">
+        <option value="toggle">Toggle (if any ON -> all OFF, else all ON)</option>
+        <option value="on">On</option>
+        <option value="off">Off</option>
+        <option value="setLevel">Set Level</option>
+      </select>
+
+      <label id="groupLevelLabel" style="display:none">Level (0-100)</label>
+      <input id="groupLevel" type="number" min="0" max="100" style="display:none" />
+    </div>
+
+    <div>
+      <button id="saveSettings">Save Key Settings</button>
+      <div id="status" class="small"></div>
+    </div>
+
+    <script type="module" src="propertyinspector.js"></script>
+  </body>
+</html>
