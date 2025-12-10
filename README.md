@@ -24,8 +24,3 @@ Notes:
 - Uses SmartThings REST API: /v1/devices, /v1/devices/{id}/status, /v1/devices/{id}/commands, /v1/scenes, /v1/scenes/{id}/execute
 - Group is a plugin-side group (i.e., a list of device IDs saved in that key's settings).
 - Property Inspector communicates with Stream Deck host (setSettings / setGlobalSettings). Falls back to localStorage if host connection is not present (development).
-
-If you want, I can:
-- Open a fork and prepare a PR against thibautsabot/streamdeck-plugin-smartthings and port these changes into that repo.
-- Add icons and nicer on/off images.
-- Extend capabilities (dimmers with levels, color changes, locks).
