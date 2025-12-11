@@ -53,8 +53,8 @@ function connectPI() {
     status('PI registered');
     websocket!.send(JSON.stringify({ event: "getGlobalSettings", context: uuid }));
   };
-  websocket.onmessage = (evt) => {
-    const msg = JSON.parse(evt.data);
+  websocket.onmessage = (evt: MessageEvent) => {
+    const msg = JSON.parse(evt.data as string);
     const { event, payload } = msg;
     if (event === 'didReceiveSettings' && payload?.settings) {
       loadSettingsIntoUI(payload.settings);
@@ -79,7 +79,7 @@ function saveGlobalPat() {
 }
 
 function saveKeySettings() {
-  const type = targetType.value;
+  const type = (targetType as HTMLSelectElement).value;
   const settings: any = { type };
   if (type === 'device') {
     settings.device_id = deviceSelect.value || '';
@@ -109,11 +109,13 @@ function loadSettingsFromLocal() {
 
 function loadSettingsIntoUI(s: any) {
   if (s.smartthings_pat) patInput.value = s.smartthings_pat;
-  if (s.type) targetType.value = s.type;
+  if (s.type) (targetType as HTMLSelectElement).value = s.type;
   if (s.device_id) deviceSelect.value = s.device_id;
   if (s.scene_id) sceneSelect.value = s.scene_id;
   if (Array.isArray(s.group_device_ids)) {
-    setTimeout(() => { for (const opt of Array.from(groupDevices.options)) (opt as HTMLOptionElement).selected = s.group_device_ids.includes(opt.value); }, 250);
+    setTimeout(() => {
+      for (const opt of Array.from(groupDevices.options)) (opt as HTMLOptionElement).selected = s.group_device_ids.includes((opt as HTMLOptionElement).value);
+    }, 250);
   }
   if (s.command) { deviceCommand.value = s.command; groupCommand.value = s.command; }
   if (s.level) { deviceLevel.value = s.level; groupLevel.value = s.level; }
@@ -121,7 +123,7 @@ function loadSettingsIntoUI(s: any) {
 }
 
 function updateSections() {
-  const t = targetType.value;
+  const t = (targetType as HTMLSelectElement).value;
   (deviceSection as HTMLElement).style.display = t === 'device' ? 'block' : 'none';
   (sceneSection as HTMLElement).style.display = t === 'scene' ? 'block' : 'none';
   (groupSection as HTMLElement).style.display = t === 'group' ? 'block' : 'none';
@@ -140,7 +142,7 @@ loadDevicesBtn.addEventListener('click', async () => {
     const devices = await ST.listDevices(token);
     deviceSelect.innerHTML = '<option value="">(no device)</option>';
     groupDevices.innerHTML = '';
-    devices.forEach(d => {
+    devices.forEach((d: any) => {
       const label = d.label || d.name || d.deviceId;
       const opt1 = document.createElement('option');
       opt1.value = d.deviceId;
@@ -161,7 +163,7 @@ loadScenesBtn.addEventListener('click', async () => {
   try {
     const scenes = await ST.listScenes(token);
     sceneSelect.innerHTML = '<option value="">(no scene)</option>';
-    scenes.forEach(s => {
+    scenes.forEach((s: any) => {
       const opt = document.createElement('option');
       opt.value = s.sceneId;
       opt.textContent = `${s.name || s.sceneId} — ${s.sceneId}`;

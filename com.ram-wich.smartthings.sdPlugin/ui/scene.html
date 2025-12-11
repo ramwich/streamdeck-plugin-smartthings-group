@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>SmartThings — Scene</title>
+    <style>
+      body{font-family:system-ui,Arial;padding:12px;background:#1a1a1a;color:#eee}
+      label{display:block;margin-top:8px}
+      select,input,button{width:100%;margin-top:4px}
+      .row{display:flex;gap:8px}
+      .row>*{flex:1}
+      small{opacity:.7}
+    </style>
+  </head>
+  <body>
+    <label>PAT (global)
+      <input id="pat" type="password" placeholder="Personal Access Token" />
+      <small>Scopes: r:scenes:*, x:scenes:* (and device scopes if you also control devices)</small>
+      <button id="savePat">Save PAT</button>
+    </label>
+
+    <div class="row">
+      <button id="loadScenes">Load Scenes</button>
+    </div>
+
+    <label>Scene
+      <select id="sceneId"></select>
+    </label>
+
+    <script src="./scene.js"></script>
+  </body>
+</html>

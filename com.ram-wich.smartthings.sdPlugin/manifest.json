@@ -1,31 +1,49 @@
 {
+  "UUID": "com.ram-wich.smartthings",
+  "Name": "SmartThings",
+  "Description": "Control SmartThings devices, scenes, and groups from Stream Deck.",
+  "Author": "ramwich",
+  "URL": "https://github.com/ramwich",
+  "Category": "SmartThings",
+  "CategoryIcon": "imgs/plugin/category-icon",
+  "Icon": "imgs/plugin/marketplace",
+  "SDKVersion": 2,
+  "Version": "1.0.0.3",
+  "Software": { "MinimumVersion": "7.1" },
+  "OS": [
+    { "Platform": "windows", "MinimumVersion": "10" },
+    { "Platform": "mac", "MinimumVersion": "10.13" }
+  ],
+
+  "CodePath": "bin/plugin.html",
+
   "Actions": [
     {
-      "UUID": "com.ramwich.smartthings.control",
-      "Name": "SmartThings Control",
-      "Icon": "imgs/actionIcon",
-      "States": [
-        {
-          "Image": "imgs/actionDefault",
-          "TitleAlignment": "bottom",
-          "FontSize": "12"
-        }
-      ],
-      "Controllers": ["Keypad"],
+      "UUID": "com.ram-wich.smartthings.device",
+      "Name": "SmartThings Device",
+      "Icon": "imgs/actions/device/icon",
+      "Tooltip": "Control a device (toggle/on/off/level)",
+      "PropertyInspectorPath": "ui/device.html",
       "UserTitleEnabled": true,
-      "Tooltip": "Control SmartThings device, scene, or group"
+      "States": [{ "Image": "imgs/actions/device/key", "TitleAlignment": "bottom", "FontSize": 12 }]
+    },
+    {
+      "UUID": "com.ram-wich.smartthings.scene",
+      "Name": "SmartThings Scene",
+      "Icon": "imgs/actions/scene/icon",
+      "Tooltip": "Execute a scene",
+      "PropertyInspectorPath": "ui/scene.html",
+      "UserTitleEnabled": true,
+      "States": [{ "Image": "imgs/actions/scene/key", "TitleAlignment": "bottom", "FontSize": 12 }]
+    },
+    {
+      "UUID": "com.ram-wich.smartthings.group",
+      "Name": "SmartThings Group",
+      "Icon": "imgs/actions/group/icon",
+      "Tooltip": "Control multiple devices",
+      "PropertyInspectorPath": "ui/group.html",
+      "UserTitleEnabled": true,
+      "States": [{ "Image": "imgs/actions/group/key", "TitleAlignment": "bottom", "FontSize": 12 }]
     }
-  ],
-  "Author": "ramwich",
-  "Category": "Smart Home",
-  "Name": "SmartThings Controller (group-enabled)",
-  "URL": "https://github.com/ramwich/streamdeck-plugin-smartthings-group",
-  "SDKVersion": 2,
-  "Version": "0.4.0",
-  "CodePath": "bin/plugin.html",
-  "PropertyInspectorPath": "ui/propertyinspector.html",
-  "OS": [
-    { "Platform": "mac", "MinimumVersion": "10.13" },
-    { "Platform": "windows", "MinimumVersion": "10" }
   ]
 }

@@ -1,14 +1,14 @@
 export async function listDevices(token: string) {
   const res = await fetch('https://api.smartthings.com/v1/devices', { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(`listDevices failed: ${res.status}`);
-  const data = await res.json();
+  const data: any = await res.json();
   return data.items || [];
 }
 
 export async function listScenes(token: string) {
   const res = await fetch('https://api.smartthings.com/v1/scenes', { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(`listScenes failed: ${res.status}`);
-  const data = await res.json();
+  const data: any = await res.json();
   return data.items || [];
 }
 

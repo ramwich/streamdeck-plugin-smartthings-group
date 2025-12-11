@@ -1,6 +1,8 @@
 import { SmartThingsControl } from './actions/smartthings-control';
 
-declare global { interface Window { connectElgatoStreamDeckSocket: any; } }
+declare global {
+  interface Window { connectElgatoStreamDeckSocket: any; }
+}
 
 let websocket: WebSocket | null = null;
 let uuid: string | null = null;
@@ -17,8 +19,8 @@ const action = new SmartThingsControl();
     websocket!.send(JSON.stringify({ event: 'getGlobalSettings', context: inUUID }));
   };
 
-  websocket.onmessage = async (evt) => {
-    const msg = JSON.parse(evt.data);
+  websocket.onmessage = async (evt: MessageEvent) => {
+    const msg = JSON.parse(evt.data as string);
     const { event, action: act, context, payload } = msg;
 
     if (event === 'didReceiveGlobalSettings') {

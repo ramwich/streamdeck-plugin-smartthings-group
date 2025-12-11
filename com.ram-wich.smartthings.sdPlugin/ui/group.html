@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>SmartThings — Group</title>
+    <style>
+      body{font-family:system-ui,Arial;padding:12px;background:#1a1a1a;color:#eee}
+      label{display:block;margin-top:8px}
+      select,input,button{width:100%;margin-top:4px}
+      .row{display:flex;gap:8px}
+      .row>*{flex:1}
+      small{opacity:.7}
+    </style>
+  </head>
+  <body>
+    <label>PAT (global)
+      <input id="pat" type="password" placeholder="Personal Access Token" />
+      <small>Scopes: l:devices, r:devices:*, x:devices:*</small>
+      <button id="savePat">Save PAT</button>
+    </label>
+
+    <div class="row">
+      <button id="loadDevices">Load Devices</button>
+    </div>
+
+    <label>Group Devices (multi-select; Ctrl/Cmd+Click)
+      <select id="deviceIds" multiple size="10"></select>
+    </label>
+
+    <label>Command
+      <select id="command">
+        <option value="toggle">Toggle</option>
+        <option value="on">On</option>
+        <option value="off">Off</option>
+        <option value="setLevel">Set Level</option>
+      </select>
+    </label>
+
+    <label>Level (0–100)
+      <input id="level" type="number" min="0" max="100" value="50" />
+    </label>
+
+    <script src="./group.js"></script>
+  </body>
+</html>
