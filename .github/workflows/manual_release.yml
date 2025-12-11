@@ -1,4 +1,3 @@
- url=https://github.com/ramwich/streamdeck-plugin-smartthings-group/blob/main/.github/workflows/manual_release.yml
 name: Build and Release .sdPlugin (manual)
 
 on:
