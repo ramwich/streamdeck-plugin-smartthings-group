@@ -2,17 +2,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Stream Deck — SmartThings Plugin</title>
+    <title>SmartThings — Plugin</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <style>html,body{height:100%;margin:0;background:#111;color:#fff;font-family:system-ui,Arial}</style>
   </head>
   <body>
-    <!-- The Stream Deck host will call window.connectElgatoStreamDeckSocket(port, uuid, registerEvent) -->
+    <!-- Load plugin runtime (your src/plugin.js exposes connectElgatoStreamDeckSocket) -->
     <script type="module">
-      // Load the plugin runtime (your existing src/plugin.js). It already exposes window.connectElgatoStreamDeckSocket = connect;
       import './src/plugin.js';
-      // If your plugin.js expects a non-module load, convert to non-module or adjust. This import is simplest for modern plugin.js.
-      // No further code required here — the Stream Deck app will call window.connectElgatoStreamDeckSocket when loading the plugin.
     </script>
   </body>
 </html>
