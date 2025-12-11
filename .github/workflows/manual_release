@@ -1,0 +1,81 @@
+name: Build and Release .sdPlugin (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. v0.2.0)'
+        required: true
+        default: 'v0.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare .sdPlugin bundle
+        run: |
+          BUNDLE_DIR=StreamDeckSmartThings.sdPlugin
+          rm -rf "$BUNDLE_DIR"
+          mkdir -p "$BUNDLE_DIR"
+          cp manifest.json "$BUNDLE_DIR/"
+          cp README.md "$BUNDLE_DIR/" || true
+          cp package.json "$BUNDLE_DIR/" || true
+          cp propertyinspector.html "$BUNDLE_DIR/" || true
+          cp propertyinspector.js "$BUNDLE_DIR/" || true
+          cp -R src "$BUNDLE_DIR/" || true
+
+      - name: Create zip of bundle
+        id: make_zip
+        run: |
+          VER="${{ github.event.inputs.version }}"
+          ZIP_NAME="StreamDeckSmartThings-${VER}.zip"
+          zip -r -q "$ZIP_NAME" StreamDeckSmartThings.sdPlugin
+          echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+
+      - name: Upsert release (create or reuse)
+        id: upsert_release
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const tag = process.env.RELEASE_TAG;
+            const name = tag;
+            const body = `Automated build for ${tag}`;
+            try {
+              const existing = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag
+              });
+              core.setOutput('upload_url', existing.data.upload_url);
+              core.setOutput('release_id', existing.data.id.toString());
+            } catch (err) {
+              const created = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tag,
+                name,
+                body,
+                draft: false,
+                prerelease: false
+              });
+              core.setOutput('upload_url', created.data.upload_url);
+              core.setOutput('release_id', created.data.id.toString());
+            }
+        env:
+          RELEASE_TAG: ${{ github.event.inputs.version }}
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.upsert_release.outputs.upload_url }}
+          asset_path: ${{ steps.make_zip.outputs.zip_name }}
+          asset_name: ${{ steps.make_zip.outputs.zip_name }}
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
