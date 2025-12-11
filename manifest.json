@@ -12,7 +12,9 @@
         }
       ],
       "PropertyInspectorPath": "propertyinspector.html",
-      "Tooltip": "Control SmartThings device, scene, or group"
+      "Tooltip": "Control SmartThings device, scene, or group",
+      "Controllers": ["Keypad"],
+      "UserTitleEnabled": true
     }
   ],
   "Author": "ramwich",
@@ -20,16 +22,10 @@
   "Name": "SmartThings Controller (group-enabled)",
   "URL": "https://github.com/ramwich/streamdeck-plugin-smartthings-group",
   "SDKVersion": 2,
-  "Version": "0.2",
+  "Version": "0.3.1",
   "CodePath": "plugin.html",
   "OS": [
-    {
-      "Platform": "mac",
-      "MinimumVersion": "10.13"
-    },
-    {
-      "Platform": "windows",
-      "MinimumVersion": "10"
-    }
+    { "Platform": "mac", "MinimumVersion": "10.13" },
+    { "Platform": "windows", "MinimumVersion": "10" }
   ]
 }

@@ -4,11 +4,12 @@
     <meta charset="utf-8" />
     <title>SmartThings — Property Inspector</title>
     <style>
-      body { font-family: system-ui, Arial; padding: 12px; max-width:420px; }
+      body { font-family: system-ui, Arial; padding: 12px; max-width:420px; background:#1a1a1a; color:#eee; }
       label { display:block; margin-top:10px; font-weight:600; }
-      input, select, textarea { width:100%; padding:8px; margin-top:6px; box-sizing:border-box; }
-      button { padding:8px 10px; margin-top:8px; }
-      .small { font-size:0.9em; color:#666; margin-top:4px; }
+      input, select { width:100%; padding:8px; margin-top:6px; box-sizing:border-box; border-radius:4px; border:1px solid #444; background:#222; color:#eee; }
+      button { padding:8px 10px; margin-top:8px; border-radius:4px; border:1px solid #444; background:#333; color:#eee; cursor:pointer; }
+      button:disabled { opacity:0.6; cursor:default; }
+      .small { font-size:0.9em; color:#aaa; margin-top:4px; }
     </style>
   </head>
   <body>
