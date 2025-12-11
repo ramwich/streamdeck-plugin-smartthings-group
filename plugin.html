@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
   </head>
   <body>
-    <!-- Load plugin runtime (your src/plugin.js exposes connectElgatoStreamDeckSocket) -->
+    <!-- Stream Deck host will call window.connectElgatoStreamDeckSocket(port, uuid, registerEvent).
+         Your runtime (src/plugin.js) exposes connectElgatoStreamDeckSocket. -->
     <script type="module">
       import './src/plugin.js';
     </script>

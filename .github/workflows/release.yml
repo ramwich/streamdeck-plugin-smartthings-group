@@ -33,17 +33,19 @@ jobs:
           cp package.json "$BUNDLE_DIR/" || true
           cp propertyinspector.html "$BUNDLE_DIR/" || true
           cp propertyinspector.js "$BUNDLE_DIR/" || true
+          cp plugin.html "$BUNDLE_DIR/" || true
           cp -R src "$BUNDLE_DIR/" || true
           if [ -d images ]; then
             cp -R images "$BUNDLE_DIR/" || true
             for f in images/*.base64; do
-              if [ -f "$f" ]; then
-                out="${f%.base64}.png"
-                if [ ! -f "$out" ]; then
-                  sed 's/^data:.*;base64,//I; s/[^A-Za-z0-9+\/=]//g' "$f" | base64 --decode > "$out"
-                  cp "$out" "$BUNDLE_DIR/images/" || true
-                fi
+              [ -f "$f" ] || continue
+              out="${f%.base64}.png"
+              if [ -f "$out" ]; then
+                echo "PNG already exists for $f, skipping decode"
+                continue
               fi
+              sed 's/^data:.*;base64,//I; s/[^A-Za-z0-9+\/=]//g' "$f" | base64 --decode > "$out" 2>/dev/null || true
+              cp "$out" "$BUNDLE_DIR/images/" || true
             done
           fi
           ls -la "$BUNDLE_DIR"
