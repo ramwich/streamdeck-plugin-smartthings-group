@@ -74,7 +74,7 @@ jobs:
           cp "$ZIP" "$PLUGIN_IDENTIFIER"
           echo "installer_name=$PLUGIN_IDENTIFIER" >> $GITHUB_OUTPUT
 
-      - name: Upsert release (create if missing, otherwise get existing)
+      - name: Upsert release (create or reuse)
         id: upsert_release
         uses: actions/github-script@v6
         with:
@@ -108,6 +108,37 @@ jobs:
             }
         env:
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove existing release asset with same name (if any)
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const releaseId = parseInt(process.env.RELEASE_ID, 10);
+            const assetName = process.env.ASSET_NAME;
+            if (!releaseId) {
+              core.info('No release id provided; skipping delete step');
+              return;
+            }
+            const assets = await github.rest.repos.listReleaseAssets({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId
+            });
+            for (const a of assets.data) {
+              if (a.name === assetName) {
+                await github.rest.repos.deleteReleaseAsset({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  asset_id: a.id
+                });
+                core.info(`Deleted existing release asset: ${assetName}`);
+              }
+            }
+        env:
+          RELEASE_ID: ${{ steps.upsert_release.outputs.release_id }}
+          ASSET_NAME: ${{ steps.make_installer.outputs.installer_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release asset (.streamDeckPlugin)
