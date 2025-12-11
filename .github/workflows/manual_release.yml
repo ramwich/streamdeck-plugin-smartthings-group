@@ -19,7 +19,7 @@ jobs:
 
       - name: Prepare .sdPlugin bundle
         run: |
-          set -e
+          # Don't use `set -e` here; handle errors explicitly so decode failures don't abort the job.
           BUNDLE_DIR=StreamDeckSmartThings.sdPlugin
           rm -rf "$BUNDLE_DIR"
           mkdir -p "$BUNDLE_DIR"
@@ -29,22 +29,43 @@ jobs:
           cp propertyinspector.html "$BUNDLE_DIR/" || true
           cp propertyinspector.js "$BUNDLE_DIR/" || true
           cp -R src "$BUNDLE_DIR/" || true
-          # Copy images if present
+
+          # If images/ exists, try to decode any .base64 files safely into .png files
           if [ -d images ]; then
-            cp -R images "$BUNDLE_DIR/" || true
-            # Decode any .base64 files into .png if png not present
+            echo "images/ directory found — processing .base64 files (if any)"
             for f in images/*.base64; do
-              if [ -f "$f" ]; then
-                out="${f%.base64}.png"
-                if [ ! -f "$out" ]; then
-                  # Robust decode: strip optional data: prefix and any non-base64 chars, then decode
-                  sed 's/^data:.*;base64,//I; s/[^A-Za-z0-9+\/=]//g' "$f" | base64 --decode > "$out"
-                  cp "$out" "$BUNDLE_DIR/images/" || true
-                fi
+              [ -f "$f" ] || continue
+              out="${f%.base64}.png"
+              if [ -f "$out" ]; then
+                echo "PNG already exists for $f, skipping decode"
+                continue
+              fi
+              echo "Attempting robust decode for $f"
+              tmp="$(mktemp)"
+              # strip optional data: prefix and non-base64 chars, then try to decode
+              sed 's/^data:.*;base64,//I; s/[^A-Za-z0-9+\/=]//g' "$f" | base64 --decode > "$tmp" 2>/dev/null || {
+                echo "Warning: base64 decode failed for $f — skipping"
+                rm -f "$tmp"
+                continue
+              }
+              # validate PNG magic header (first 8 bytes: 89 50 4E 47 0D 0A 1A 0A)
+              magic="$(hexdump -n8 -v -e '/1 \"%02x\"' "$tmp" 2>/dev/null || true)"
+              if echo "$magic" | grep -iq '^89504e470d0a1a0a'; then
+                mv "$tmp" "$out"
+                echo "Decoded $f -> $out (valid PNG)"
+              else
+                echo "Warning: decoded data from $f is not a PNG (magic: $magic) — skipping"
+                rm -f "$tmp"
+                continue
               fi
             done
+
+            # copy images into the bundle (whether original PNGs or those we decoded)
+            cp -R images "$BUNDLE_DIR/" || true
           fi
-          ls -la "$BUNDLE_DIR"
+
+          echo "Bundle directory contents:"
+          ls -la "$BUNDLE_DIR" || true
 
       - name: Create zip of bundle
         id: make_zip
