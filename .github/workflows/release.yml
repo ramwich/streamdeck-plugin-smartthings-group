@@ -1,7 +1,17 @@
 # GitHub Actions: build .sdPlugin and publish zip as release asset when a tag v* is pushed
 name: Build and Release .sdPlugin
 
+# Grant the workflow permission to write repository contents (needed for creating releases)
+permissions:
+  contents: write
+
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. v0.2.0)'
+        required: false
+        default: ''
   push:
     tags:
       - 'v*'
@@ -34,18 +44,28 @@ jobs:
           ls -la "$BUNDLE_DIR"
 
       - name: Create zip of bundle
+        id: make_zip
         run: |
-          ZIP_NAME=StreamDeckSmartThings-${GITHUB_REF#refs/tags/}.zip
+          # determine version: prefer workflow_dispatch input, otherwise use tag name
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
+            VER="${{ github.event.inputs.version }}"
+          else
+            VER="${GITHUB_REF#refs/tags/}"
+          fi
+          if [ -z "$VER" ]; then
+            VER="dev"
+          fi
+          ZIP_NAME="StreamDeckSmartThings-${VER}.zip"
           zip -r -q "$ZIP_NAME" StreamDeckSmartThings.sdPlugin
-          echo "ZIP=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          release_name: ${{ github.ref_name }}
-          body: "Automatically built .sdPlugin for ${{ github.ref_name }}"
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
+          release_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
+          body: "Automatically built .sdPlugin for ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}"
           draft: false
           prerelease: false
         env:
@@ -55,8 +75,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./StreamDeckSmartThings-${{ github.ref_name }}.zip
-          asset_name: StreamDeckSmartThings-${{ github.ref_name }}.zip
+          asset_path: ${{ steps.make_zip.outputs.zip_name }}
+          asset_name: ${{ steps.make_zip.outputs.zip_name }}
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
