@@ -1,4 +1,3 @@
- url=https://github.com/ramwich/streamdeck-plugin-smartthings-group/blob/main/.github/workflows/release.yml
 # Build .sdPlugin and publish a single .streamDeckPlugin file as the release asset
 name: Build and Release .sdPlugin (single-file installer)
 
