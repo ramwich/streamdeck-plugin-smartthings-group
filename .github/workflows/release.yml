@@ -22,32 +22,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare .sdPlugin bundle directory
+      - name: Prepare .sdPlugin bundle
         run: |
-          set -e
           BUNDLE_DIR=StreamDeckSmartThings.sdPlugin
           rm -rf "$BUNDLE_DIR"
           mkdir -p "$BUNDLE_DIR"
           cp manifest.json "$BUNDLE_DIR/"
+          cp plugin.html "$BUNDLE_DIR/" || true
           cp README.md "$BUNDLE_DIR/" || true
           cp package.json "$BUNDLE_DIR/" || true
           cp propertyinspector.html "$BUNDLE_DIR/" || true
           cp propertyinspector.js "$BUNDLE_DIR/" || true
-          cp plugin.html "$BUNDLE_DIR/" || true
           cp -R src "$BUNDLE_DIR/" || true
-          if [ -d images ]; then
-            cp -R images "$BUNDLE_DIR/" || true
-            for f in images/*.base64; do
-              [ -f "$f" ] || continue
-              out="${f%.base64}.png"
-              if [ -f "$out" ]; then
-                echo "PNG already exists for $f, skipping decode"
-                continue
-              fi
-              sed 's/^data:.*;base64,//I; s/[^A-Za-z0-9+\/=]//g' "$f" | base64 --decode > "$out" 2>/dev/null || true
-              cp "$out" "$BUNDLE_DIR/images/" || true
-            done
-          fi
+          cp -R images "$BUNDLE_DIR/" || true
           ls -la "$BUNDLE_DIR"
 
       - name: Create zip of bundle
