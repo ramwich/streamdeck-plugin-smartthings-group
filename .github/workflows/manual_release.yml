@@ -19,49 +19,18 @@ jobs:
 
       - name: Prepare .sdPlugin bundle
         run: |
-          # Keep decode errors non-fatal; handle explicitly
           BUNDLE_DIR=StreamDeckSmartThings.sdPlugin
           rm -rf "$BUNDLE_DIR"
           mkdir -p "$BUNDLE_DIR"
           cp manifest.json "$BUNDLE_DIR/"
+          cp plugin.html "$BUNDLE_DIR/" || true
           cp README.md "$BUNDLE_DIR/" || true
           cp package.json "$BUNDLE_DIR/" || true
           cp propertyinspector.html "$BUNDLE_DIR/" || true
           cp propertyinspector.js "$BUNDLE_DIR/" || true
-          cp plugin.html "$BUNDLE_DIR/" || true
           cp -R src "$BUNDLE_DIR/" || true
-
-          if [ -d images ]; then
-            echo "images/ directory found — processing .base64 files (if any)"
-            for f in images/*.base64; do
-              [ -f "$f" ] || continue
-              out="${f%.base64}.png"
-              if [ -f "$out" ]; then
-                echo "PNG already exists for $f, skipping decode"
-                continue
-              fi
-              tmp="$(mktemp)"
-              # strip optional data: prefix and non-base64 chars, then try to decode
-              sed 's/^data:.*;base64,//I; s/[^A-Za-z0-9+\/=]//g' "$f" | base64 --decode > "$tmp" 2>/dev/null || {
-                echo "Warning: base64 decode failed for $f — skipping"
-                rm -f "$tmp"
-                continue
-              }
-              # validate PNG magic header (first 8 bytes: 89 50 4E 47 0D 0A 1A 0A)
-              magic="$(hexdump -n8 -v -e '/1 \"%02x\"' "$tmp" 2>/dev/null || true)"
-              if echo "$magic" | grep -iq '^89504e470d0a1a0a'; then
-                mv "$tmp" "$out"
-                echo "Decoded $f -> $out (valid PNG)"
-              else
-                echo "Warning: decoded data from $f is not a PNG (magic: $magic) — skipping"
-                rm -f "$tmp"
-                continue
-              fi
-            done
-            cp -R images "$BUNDLE_DIR/" || true
-          fi
-          echo "Bundle directory contents:"
-          ls -la "$BUNDLE_DIR" || true
+          cp -R images "$BUNDLE_DIR/" || true
+          ls -la "$BUNDLE_DIR"
 
       - name: Create zip of bundle
         id: make_zip
