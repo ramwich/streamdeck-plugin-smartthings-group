@@ -3,10 +3,10 @@
     {
       "UUID": "com.ramwich.smartthings.control",
       "Name": "SmartThings Control",
-      "Icon": "images/actionIcon.png",
+      "Icon": "icons/actionIcon",
       "States": [
         {
-          "Image": "images/actionDefault.png",
+          "Image": "icons/actionDefault",
           "TitleAlignment": "bottom",
           "FontSize": "12"
         }
@@ -22,7 +22,7 @@
   "Name": "SmartThings Controller (group-enabled)",
   "URL": "https://github.com/ramwich/streamdeck-plugin-smartthings-group",
   "SDKVersion": 2,
-  "Version": "0.3.1",
+  "Version": "0.3.2",
   "CodePath": "plugin.html",
   "OS": [
     { "Platform": "mac", "MinimumVersion": "10.13" },
