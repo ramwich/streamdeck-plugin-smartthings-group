@@ -1,3 +1,4 @@
+ url=https://github.com/ramwich/streamdeck-plugin-smartthings-group/blob/main/.github/workflows/manual_release.yml
 name: Build and Release .sdPlugin (manual)
 
 on:
@@ -37,7 +38,8 @@ jobs:
               if [ -f "$f" ]; then
                 out="${f%.base64}.png"
                 if [ ! -f "$out" ]; then
-                  base64 -d "$f" > "$out"
+                  # Robust decode: strip optional data: prefix and any non-base64 chars, then decode
+                  sed 's/^data:.*;base64,//I; s/[^A-Za-z0-9+\/=]//g' "$f" | base64 --decode > "$out"
                   cp "$out" "$BUNDLE_DIR/images/" || true
                 fi
               fi
@@ -93,7 +95,6 @@ jobs:
               });
               core.setOutput('upload_url', created.data.upload_url);
               core.setOutput('release_id', created.data.id.toString());
-              core.info(`Created release for ${tag}`);
             }
         env:
           RELEASE_TAG: ${{ github.event.inputs.version }}

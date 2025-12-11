@@ -1,3 +1,4 @@
+ url=https://github.com/ramwich/streamdeck-plugin-smartthings-group/blob/main/.github/workflows/release.yml
 # Build .sdPlugin and publish a single .streamDeckPlugin file as the release asset
 name: Build and Release .sdPlugin (single-file installer)
 
@@ -40,7 +41,7 @@ jobs:
               if [ -f "$f" ]; then
                 out="${f%.base64}.png"
                 if [ ! -f "$out" ]; then
-                  base64 -d "$f" > "$out"
+                  sed 's/^data:.*;base64,//I; s/[^A-Za-z0-9+\/=]//g' "$f" | base64 --decode > "$out"
                   cp "$out" "$BUNDLE_DIR/images/" || true
                 fi
               fi
