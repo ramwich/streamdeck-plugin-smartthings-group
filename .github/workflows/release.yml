@@ -1,7 +1,6 @@
-# GitHub Actions: build .sdPlugin and publish zip as release asset when a tag v* is pushed
-name: Build and Release .sdPlugin
+# Build .sdPlugin and publish a single .streamDeckPlugin file as the release asset
+name: Build and Release .sdPlugin (single-file installer)
 
-# Grant the workflow permission to write repository contents (needed for creating releases)
 permissions:
   contents: write
 
@@ -9,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g. v0.2.0)'
+        description: 'Release version (e.g. v0.2.0). If empty when run manually, "dev" will be used.'
         required: false
         default: ''
   push:
@@ -23,30 +22,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node (for optional JS tooling; not required)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
       - name: Prepare .sdPlugin bundle directory
         run: |
           BUNDLE_DIR=StreamDeckSmartThings.sdPlugin
           rm -rf "$BUNDLE_DIR"
           mkdir -p "$BUNDLE_DIR"
-          # Copy files that should be at the root of the bundle
           cp manifest.json "$BUNDLE_DIR/"
           cp README.md "$BUNDLE_DIR/" || true
           cp package.json "$BUNDLE_DIR/" || true
           cp propertyinspector.html "$BUNDLE_DIR/" || true
           cp propertyinspector.js "$BUNDLE_DIR/" || true
-          # Copy src folder
           cp -R src "$BUNDLE_DIR/" || true
           ls -la "$BUNDLE_DIR"
 
       - name: Create zip of bundle
         id: make_zip
         run: |
-          # determine version: prefer workflow_dispatch input, otherwise use tag name
+          # determine version: prefer manual input, otherwise use tag name
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
             VER="${{ github.event.inputs.version }}"
           else
@@ -58,25 +50,68 @@ jobs:
           ZIP_NAME="StreamDeckSmartThings-${VER}.zip"
           zip -r -q "$ZIP_NAME" StreamDeckSmartThings.sdPlugin
           echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "ver=$VER" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Create single-file installer (.streamDeckPlugin)
+        id: make_installer
+        run: |
+          # choose the package identifier you want for the single-file installer:
+          # replace the name below with the identifier you prefer
+          PLUGIN_IDENTIFIER="com.ramwich.streamdeck.smartthings.streamDeckPlugin"
+          ZIP="$ZIP_NAME"
+          # ensure $ZIP_NAME is set (read from previous output)
+          ZIP="${{ steps.make_zip.outputs.zip_name }}"
+          cp "$ZIP" "$PLUGIN_IDENTIFIER"
+          echo "installer_name=$PLUGIN_IDENTIFIER" >> $GITHUB_OUTPUT
+
+      - name: Upsert release (create if missing, otherwise get existing)
+        id: upsert_release
+        uses: actions/github-script@v6
         with:
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
-          release_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
-          body: "Automatically built .sdPlugin for ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}"
-          draft: false
-          prerelease: false
+          result-encoding: string
+          script: |
+            const tag = process.env.RELEASE_TAG;
+            const name = tag;
+            const body = `Automatically built .sdPlugin for ${tag}`;
+            try {
+              const existing = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag
+              });
+              core.setOutput('upload_url', existing.data.upload_url);
+              core.setOutput('release_id', existing.data.id.toString());
+              core.info(`Found existing release for ${tag}`);
+            } catch (err) {
+              const created = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tag,
+                name,
+                body,
+                draft: false,
+                prerelease: false
+              });
+              core.setOutput('upload_url', created.data.upload_url);
+              core.setOutput('release_id', created.data.id.toString());
+              core.info(`Created release for ${tag}`);
+            }
         env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload release asset
+      - name: Upload release asset (.streamDeckPlugin)
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.make_zip.outputs.zip_name }}
-          asset_name: ${{ steps.make_zip.outputs.zip_name }}
+          upload_url: ${{ steps.upsert_release.outputs.upload_url }}
+          asset_path: ${{ steps.make_installer.outputs.installer_name }}
+          asset_name: ${{ steps.make_installer.outputs.installer_name }}
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact (zip) for convenience
+        uses: actions/upload-artifact@v4
+        with:
+          name: StreamDeckSmartThings-${{ steps.make_zip.outputs.ver }}
+          path: ${{ steps.make_zip.outputs.zip_name }}
