@@ -22,7 +22,8 @@ $FILES = @(
   "package.json",
   "propertyinspector.html",
   "propertyinspector.js",
-  "src"
+  "src",
+  "images"
 )
 
 $outDir = Join-Path -Path (Get-Location) -ChildPath $OutBundleName
@@ -35,6 +36,22 @@ if (Test-Path $outDir) {
 
 Info "Creating bundle directory: $outDir"
 New-Item -ItemType Directory -Path $outDir | Out-Null
+
+# If images folder contains .base64 files, decode them to .png (do not overwrite existing .png)
+$imagesDir = Join-Path (Get-Location) "images"
+if (Test-Path $imagesDir) {
+  Get-ChildItem -Path $imagesDir -Filter '*.base64' -File -ErrorAction SilentlyContinue | ForEach-Object {
+    $baseFile = $_.FullName
+    $pngFile = $baseFile -replace '\.base64$','.png'
+    if (-not (Test-Path $pngFile)) {
+      Info "Decoding base64 image: $($_.Name) -> $(Split-Path $pngFile -Leaf)"
+      $b64 = Get-Content -Raw -Path $baseFile
+      [System.IO.File]::WriteAllBytes($pngFile, [Convert]::FromBase64String($b64))
+    } else {
+      Info "PNG already exists, skipping decode for: $(Split-Path $pngFile -Leaf)"
+    }
+  }
+}
 
 foreach ($f in $FILES) {
   if (Test-Path $f) {

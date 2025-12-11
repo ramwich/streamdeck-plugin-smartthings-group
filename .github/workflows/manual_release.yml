@@ -19,6 +19,7 @@ jobs:
 
       - name: Prepare .sdPlugin bundle
         run: |
+          set -e
           BUNDLE_DIR=StreamDeckSmartThings.sdPlugin
           rm -rf "$BUNDLE_DIR"
           mkdir -p "$BUNDLE_DIR"
@@ -28,14 +29,39 @@ jobs:
           cp propertyinspector.html "$BUNDLE_DIR/" || true
           cp propertyinspector.js "$BUNDLE_DIR/" || true
           cp -R src "$BUNDLE_DIR/" || true
+          # Copy images if present
+          if [ -d images ]; then
+            cp -R images "$BUNDLE_DIR/" || true
+            # Decode any .base64 files into .png if png not present
+            for f in images/*.base64; do
+              if [ -f "$f" ]; then
+                out="${f%.base64}.png"
+                if [ ! -f "$out" ]; then
+                  base64 -d "$f" > "$out"
+                  cp "$out" "$BUNDLE_DIR/images/" || true
+                fi
+              fi
+            done
+          fi
+          ls -la "$BUNDLE_DIR"
 
       - name: Create zip of bundle
         id: make_zip
         run: |
           VER="${{ github.event.inputs.version }}"
+          if [ -z "$VER" ]; then VER="dev"; fi
           ZIP_NAME="StreamDeckSmartThings-${VER}.zip"
           zip -r -q "$ZIP_NAME" StreamDeckSmartThings.sdPlugin
           echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "ver=$VER" >> $GITHUB_OUTPUT
+
+      - name: Create single-file installer (.streamDeckPlugin)
+        id: make_installer
+        run: |
+          PLUGIN_IDENTIFIER="com.ramwich.streamdeck.smartthings.streamDeckPlugin"
+          ZIP="${{ steps.make_zip.outputs.zip_name }}"
+          cp "$ZIP" "$PLUGIN_IDENTIFIER"
+          echo "installer_name=$PLUGIN_IDENTIFIER" >> $GITHUB_OUTPUT
 
       - name: Upsert release (create or reuse)
         id: upsert_release
@@ -54,6 +80,7 @@ jobs:
               });
               core.setOutput('upload_url', existing.data.upload_url);
               core.setOutput('release_id', existing.data.id.toString());
+              core.info(`Found existing release for ${tag}`);
             } catch (err) {
               const created = await github.rest.repos.createRelease({
                 owner: context.repo.owner,
@@ -66,16 +93,24 @@ jobs:
               });
               core.setOutput('upload_url', created.data.upload_url);
               core.setOutput('release_id', created.data.id.toString());
+              core.info(`Created release for ${tag}`);
             }
         env:
           RELEASE_TAG: ${{ github.event.inputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload release asset
+      - name: Upload release asset (.streamDeckPlugin)
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.upsert_release.outputs.upload_url }}
-          asset_path: ${{ steps.make_zip.outputs.zip_name }}
-          asset_name: ${{ steps.make_zip.outputs.zip_name }}
+          asset_path: ${{ steps.make_installer.outputs.installer_name }}
+          asset_name: ${{ steps.make_installer.outputs.installer_name }}
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact (zip) for convenience
+        uses: actions/upload-artifact@v4
+        with:
+          name: StreamDeckSmartThings-${{ steps.make_zip.outputs.ver }}
+          path: ${{ steps.make_zip.outputs.zip_name }}

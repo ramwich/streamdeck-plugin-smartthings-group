@@ -24,6 +24,7 @@ jobs:
 
       - name: Prepare .sdPlugin bundle directory
         run: |
+          set -e
           BUNDLE_DIR=StreamDeckSmartThings.sdPlugin
           rm -rf "$BUNDLE_DIR"
           mkdir -p "$BUNDLE_DIR"
@@ -33,12 +34,23 @@ jobs:
           cp propertyinspector.html "$BUNDLE_DIR/" || true
           cp propertyinspector.js "$BUNDLE_DIR/" || true
           cp -R src "$BUNDLE_DIR/" || true
+          if [ -d images ]; then
+            cp -R images "$BUNDLE_DIR/" || true
+            for f in images/*.base64; do
+              if [ -f "$f" ]; then
+                out="${f%.base64}.png"
+                if [ ! -f "$out" ]; then
+                  base64 -d "$f" > "$out"
+                  cp "$out" "$BUNDLE_DIR/images/" || true
+                fi
+              fi
+            done
+          fi
           ls -la "$BUNDLE_DIR"
 
       - name: Create zip of bundle
         id: make_zip
         run: |
-          # determine version: prefer manual input, otherwise use tag name
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
             VER="${{ github.event.inputs.version }}"
           else
@@ -55,11 +67,7 @@ jobs:
       - name: Create single-file installer (.streamDeckPlugin)
         id: make_installer
         run: |
-          # choose the package identifier you want for the single-file installer:
-          # replace the name below with the identifier you prefer
           PLUGIN_IDENTIFIER="com.ramwich.streamdeck.smartthings.streamDeckPlugin"
-          ZIP="$ZIP_NAME"
-          # ensure $ZIP_NAME is set (read from previous output)
           ZIP="${{ steps.make_zip.outputs.zip_name }}"
           cp "$ZIP" "$PLUGIN_IDENTIFIER"
           echo "installer_name=$PLUGIN_IDENTIFIER" >> $GITHUB_OUTPUT
