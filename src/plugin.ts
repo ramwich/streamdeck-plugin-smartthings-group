@@ -1,12 +1,33 @@
-import streamDeck from "@elgato/streamdeck";
+import { SmartThingsControl } from './actions/smartthings-control';
 
-import { IncrementCounter } from "./actions/increment-counter";
+declare global { interface Window { connectElgatoStreamDeckSocket: any; } }
 
-// We can enable "trace" logging so that all messages between the Stream Deck, and the plugin are recorded. When storing sensitive information
-streamDeck.logger.setLevel("trace");
+let websocket: WebSocket | null = null;
+let uuid: string | null = null;
+let globalSettings: any = {};
 
-// Register the increment action.
-streamDeck.actions.registerAction(new IncrementCounter());
+const action = new SmartThingsControl();
 
-// Finally, connect to the Stream Deck.
-streamDeck.connect();
+(window as any).connectElgatoStreamDeckSocket = function(inPort: number, inUUID: string, inRegisterEvent: string) {
+  uuid = inUUID;
+  websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
+
+  websocket.onopen = () => {
+    websocket!.send(JSON.stringify({ event: inRegisterEvent, uuid: inUUID }));
+    websocket!.send(JSON.stringify({ event: 'getGlobalSettings', context: inUUID }));
+  };
+
+  websocket.onmessage = async (evt) => {
+    const msg = JSON.parse(evt.data);
+    const { event, action: act, context, payload } = msg;
+
+    if (event === 'didReceiveGlobalSettings') {
+      globalSettings = (payload && payload.settings) ? payload.settings : {};
+    } else if ((event === 'willAppear' || event === 'didReceiveSettings') && act === 'com.ramwich.smartthings.control') {
+      const s = (msg.payload && msg.payload.settings) ? msg.payload.settings : {};
+      await action.refresh(websocket!, context, s, globalSettings);
+    } else if (event === 'keyDown' && act === 'com.ramwich.smartthings.control') {
+      await action.keyDown(websocket!, context, (msg.payload || {}).settings || {}, globalSettings);
+    }
+  };
+};

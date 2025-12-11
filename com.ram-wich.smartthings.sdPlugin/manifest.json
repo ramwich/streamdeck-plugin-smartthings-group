@@ -1,47 +1,31 @@
 {
-	"Name": "SmartThings",
-	"Version": "0.1.0.0",
-	"Author": "ram-wich",
-	"Actions": [
-		{
-			"Name": "Counter",
-			"UUID": "com.ram-wich.smartthings.increment",
-			"Icon": "imgs/actions/counter/icon",
-			"Tooltip": "Displays a count, which increments by one on press.",
-			"PropertyInspectorPath": "ui/increment-counter.html",
-			"Controllers": [
-				"Keypad"
-			],
-			"States": [
-				{
-					"Image": "imgs/actions/counter/key",
-					"TitleAlignment": "middle"
-				}
-			]
-		}
-	],
-	"Category": "SmartThings",
-	"CategoryIcon": "imgs/plugin/category-icon",
-	"CodePath": "bin/plugin.js",
-	"Description": "Allows you to control your SmartThings devices/groups.",
-	"Icon": "imgs/plugin/marketplace",
-	"SDKVersion": 3,
-	"Software": {
-		"MinimumVersion": "6.9"
-	},
-	"OS": [
-		{
-			"Platform": "mac",
-			"MinimumVersion": "12"
-		},
-		{
-			"Platform": "windows",
-			"MinimumVersion": "10"
-		}
-	],
-	"Nodejs": {
-		"Version": "20",
-		"Debug": "enabled"
-	},
-	"UUID": "com.ram-wich.smartthings"
+  "Actions": [
+    {
+      "UUID": "com.ramwich.smartthings.control",
+      "Name": "SmartThings Control",
+      "Icon": "imgs/actionIcon",
+      "States": [
+        {
+          "Image": "imgs/actionDefault",
+          "TitleAlignment": "bottom",
+          "FontSize": "12"
+        }
+      ],
+      "Controllers": ["Keypad"],
+      "UserTitleEnabled": true,
+      "Tooltip": "Control SmartThings device, scene, or group"
+    }
+  ],
+  "Author": "ramwich",
+  "Category": "Smart Home",
+  "Name": "SmartThings Controller (group-enabled)",
+  "URL": "https://github.com/ramwich/streamdeck-plugin-smartthings-group",
+  "SDKVersion": 2,
+  "Version": "0.4.0",
+  "CodePath": "bin/plugin.html",
+  "PropertyInspectorPath": "ui/propertyinspector.html",
+  "OS": [
+    { "Platform": "mac", "MinimumVersion": "10.13" },
+    { "Platform": "windows", "MinimumVersion": "10" }
+  ]
 }

@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>SmartThings — Property Inspector</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+      body { font-family: system-ui, Arial; padding: 12px; max-width: 520px; background:#1a1a1a; color:#eee; }
+      label { display:block; margin-top:10px; font-weight:600; }
+      input, select { width:100%; padding:8px; margin-top:6px; box-sizing:border-box; border-radius:4px; border:1px solid #444; background:#222; color:#eee; }
+      button { padding:8px 10px; margin-top:8px; border-radius:4px; border:1px solid #444; background:#333; color:#eee; cursor:pointer; }
+      button:disabled { opacity:0.6; cursor:default; }
+      .small { font-size:0.9em; color:#aaa; margin-top:4px; }
+      .row { display:flex; gap:8px; margin-top:8px; }
+      .row > * { flex:1; }
+    </style>
+  </head>
+  <body>
+    <h3>SmartThings</h3>
+
+    <label>Personal Access Token (PAT)</label>
+    <input id="pat" placeholder="Paste your SmartThings PAT here" />
+    <div class="row">
+      <button id="savePat">Save PAT (global)</button>
+      <button id="loadDevices">Load devices</button>
+      <button id="loadScenes">Load scenes</button>
+    </div>
+    <div class="small">PAT is saved globally for the plugin.</div>
+
+    <label>Target type</label>
+    <select id="targetType">
+      <option value="device">Device</option>
+      <option value="scene">Scene</option>
+      <option value="group">Group (multi-device)</option>
+    </select>
+
+    <div id="deviceSection">
+      <label>Device</label>
+      <select id="deviceSelect"><option value="">(no device)</option></select>
+
+      <label>Command</label>
+      <select id="deviceCommand">
+        <option value="toggle">Toggle</option>
+        <option value="on">On</option>
+        <option value="off">Off</option>
+        <option value="setLevel">Set Level</option>
+      </select>
+
+      <label id="deviceLevelLabel" style="display:none">Level (0-100)</label>
+      <input id="deviceLevel" type="number" min="0" max="100" style="display:none" />
+    </div>
+
+    <div id="sceneSection" style="display:none">
+      <label>Scene</label>
+      <select id="sceneSelect"><option value="">(no scene)</option></select>
+    </div>
+
+    <div id="groupSection" style="display:none">
+      <label>Devices (hold Ctrl/Cmd to multi-select)</label>
+      <select id="groupDevices" multiple size="6" style="height:150px"></select>
+
+      <label>Group Command</label>
+      <select id="groupCommand">
+        <option value="toggle">Toggle</option>
+        <option value="on">On</option>
+        <option value="off">Off</option>
+        <option value="setLevel">Set Level</option>
+      </select>
+
+      <label id="groupLevelLabel" style="display:none">Level (0-100)</label>
+      <input id="groupLevel" type="number" min="0" max="100" style="display:none" />
+    </div>
+
+    <div>
+      <button id="saveSettings">Save Key Settings</button>
+      <div id="status" class="small"></div>
+    </div>
+
+    <!-- Load the compiled PI JS -->
+    <script type="module" src="./propertyinspector.js"></script>
+  </body>
+</html>
